@@ -1,12 +1,16 @@
 #include <SDL2/SDL.h>
+
 #include <stdio.h>
+#include <iostream>
 
 #include "pdbp.h"
 
 PDBP::PDBP() {
-  this->pxlHeight = 32;
-  this->pxlWidth = 64;
-  this->pxlSize = 16;
+  pxlHeight = 32;
+  pxlWidth = 64;
+  pxlSize = 16;
+
+  screenBits = boost::dynamic_bitset<>(pxlHeight * pxlWidth);
 }
 
  PDBP::~PDBP() {
@@ -27,22 +31,22 @@ int PDBP::initDisplay() {
     return 1;
   }
 
-  this->window = SDL_CreateWindow(
+  window = SDL_CreateWindow(
     "SDL Tutorial",
     SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
     pxlWidth * pxlSize, pxlHeight * pxlSize,
     SDL_WINDOW_SHOWN);
 
-  if (this->window == nullptr) {
+  if (window == nullptr) {
     printError(SDL_GetError());
     SDL_Quit();
     return 1;
   }
 
-  this->renderer = SDL_CreateRenderer(this->window, -1, SDL_RENDERER_ACCELERATED);
-  if (this->renderer == nullptr) {
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  if (renderer == nullptr) {
     printError(SDL_GetError());
-    SDL_DestroyWindow(this->window);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     return 1;
   }
@@ -100,26 +104,27 @@ void PDBP::applyDrawToDisplay() {
 void PDBP::printError(const char* msg) {
   printf("Error:\n%s\n", msg);
 }
-// int main(int argc, char* args[]) {
-//   SDL_SetRenderDrawColor(renderer, 0x40, 0xB0, 0xC0, 0xFF);
-//   SDL_RenderClear(renderer);
 
-//   SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-//   SDL_Rect r = { //construct "pixel" rect
-//         0,
-//         0,
-//         PXL_SIZE,
-//         PXL_SIZE
-//       };
-//   SDL_RenderFillRect(renderer, &r);
-//   SDL_RenderPresent(renderer);
+void PDBP::setKeyMap(SDL_Keycode key, void (*callback)()) {
+  keyMap.insert({key, callback});
+}
 
-//   SDL_Event quittingEvt;
-//   while(quittingEvt.type != SDL_QUIT) {
-//     SDL_PollEvent(&quittingEvt);
-//   }
+bool PDBP::polls() {
+  bool contRunning = true;
+  SDL_PollEvent(&sdl_evt);
+  poll_quit(contRunning);
+  poll_keys(contRunning);
+  return contRunning;
+}
 
-  
-//   return 0;
-// }
+void PDBP::poll_quit(bool &contRunning) {
+  if (contRunning)
+    contRunning = (sdl_evt.type != SDL_QUIT);
+}
+
+void PDBP::poll_keys(bool &contRunning) {
+  if (contRunning && sdl_evt.type == SDL_KEYDOWN) {
+    (*keyMap[sdl_evt.key.keysym.sym])();
+  }
+}
 
