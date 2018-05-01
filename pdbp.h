@@ -4,6 +4,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#include <functional>
 #include <stdint.h>
 #include <bitset>
 #include <unordered_map>
@@ -36,7 +37,9 @@ public:
   void applyDrawToDisplay();
 
   // Keys
-  void setKeyMap(SDL_Keycode key, void (*callback)());
+  void setKeyMap(SDL_Keycode key, std::function<void()> callback);
+
+  // Timing
 
   // Polling
   bool polls();
@@ -53,7 +56,7 @@ private:
 
   SDL_Event sdl_evt;
 
-  std::unordered_map<SDL_Keycode, void (*)()> keyMap;
+  std::unordered_map<SDL_Keycode, std::function<void()>> keyMap;
 
   void poll_quit(bool &contRunning);
   void poll_keys(bool &contRunning);

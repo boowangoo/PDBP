@@ -14,8 +14,6 @@ PDBP::PDBP() {
 }
 
  PDBP::~PDBP() {
-  delete window;
-  delete renderer;
  }
 
 PDBP::PDBP(uint8_t pxlSize, uint8_t pxlHeight, uint8_t pxlWidth) {
@@ -105,8 +103,8 @@ void PDBP::printError(const char* msg) {
   printf("Error:\n%s\n", msg);
 }
 
-void PDBP::setKeyMap(SDL_Keycode key, void (*callback)()) {
-  keyMap.insert({key, callback});
+void PDBP::setKeyMap(SDL_Keycode key, std::function<void()> callback) {
+  keyMap.insert({key, callback}); 
 }
 
 bool PDBP::polls() {
@@ -123,8 +121,8 @@ void PDBP::poll_quit(bool &contRunning) {
 }
 
 void PDBP::poll_keys(bool &contRunning) {
-  if (contRunning && sdl_evt.type == SDL_KEYDOWN) {
-    (*keyMap[sdl_evt.key.keysym.sym])();
+  if (contRunning && sdl_evt.type == SDL_KEYDOWN && keyMap[sdl_evt.key.keysym.sym]) {
+    (keyMap[sdl_evt.key.keysym.sym])();
   }
 }
 
